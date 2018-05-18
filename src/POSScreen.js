@@ -2,19 +2,26 @@ import React from 'react';
 import './pos.css'
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
-//import {QuantitySelect} from './QuantitySelect';
-import {Button} from 'reactstrap';
-
+import {Button,Container, Row, Col} from 'reactstrap';
+import Background from './images/pos.jpg';
 import {Table} from 'reactstrap';
 import Cancel from 'react-icons/lib/io/android-cancel';
 import ArrowUp from 'react-icons/lib/io/android-arrow-up';
 import ArrowDown from 'react-icons/lib/io/arrow-down-c';
 
+
 const DATA = require('./Products');
 
 let selectedItemsList = [];
 let grandTotal = 0;
-
+const sectionStyle = {
+  width: "100%",
+  height: "100%",
+  backgroundImage: `url(${Background})`
+};
+const style= {
+  color: 'white'
+};
 export class POSScreen extends React.Component{
   constructor(props){
     super(props)
@@ -39,16 +46,28 @@ export class POSScreen extends React.Component{
   }
 
   decrementItem = (index) => {
-    selectedItemsList[index].quantity -= 1;
-    selectedItemsList[index].total = selectedItemsList[index].value * selectedItemsList[index].quantity;
-    grandTotal -= selectedItemsList[index].value;
+    if (selectedItemsList[index].quantity !== 0){
+      selectedItemsList[index].quantity -= 1;
+      selectedItemsList[index].total = selectedItemsList[index].value * selectedItemsList[index].quantity;
+      grandTotal -= selectedItemsList[index].value;
+    }
     this.setState({initiateStateChangeForRenderToLoadAgain: grandTotal});
     console.log(selectedItemsList);
   }
 
   addToCart = () => {
+    let checkMultipleProductsCounter = 0;
+    selectedItemsList.map(product => {
+      if(product.label === this.state.selectedOption.label){
+         checkMultipleProductsCounter += 1;
+      }
+    });
+    
     if(this.state.selectedOption.label == null){
-      console.log("Error. You are not using the pos screen correctly");
+      alert("Select a product.");
+    }
+    else if (checkMultipleProductsCounter > 0) {
+      alert("Product already present in your shopping cart.");
     }
     else{
       let tempArray = [
@@ -78,37 +97,35 @@ export class POSScreen extends React.Component{
 
   render () {
 		const  options = DATA.PRODUCTS;
-    const style = {
-    display: 'inline-block',
-    width: '50%',
-    marginLeft: '20%'
-    };
     const { selectedOption } = this.state;
-
-    let items = (
-        <div style={style}>
-          <Table dark>
+    
+    let items = null;
+    if(selectedItemsList.length > 0){
+    items = (
+        <div>
+          <Table borderless>
             <thead>
               <tr>
-                <th>#</th>
-                <th>Product</th>
-                <th>Rate</th>
-                <th>Quantity</th>
-                <th>Total</th>
+                <th style={style}>#</th>
+                <th style={style}>Product</th>
+                <th style={style}>Rate</th>
+                <th style={style}>Quantity</th>
+                <th style={style}>Quantity</th>
+                <th style={style}>Total</th>
               </tr>
             </thead>
             <tbody>
               { selectedItemsList.map((product, index) => {
                 return (
                   <tr>
-                    <th scope='row'>{index+1}</th>
-                    <td>{product.label}</td>
-                    <td>{product.value}</td>
-                    <td>{product.quantity}</td>
-                    <td>{product.total}</td>
-                    <td onClick={() => this.incrementItem(index)}><ArrowUp /></td>
-                    <td onClick={() => this.decrementItem(index)}><ArrowDown /></td>
-                    <td onClick= {() => this.handleDeleteItem(index)}><Cancel /></td>
+                    <th scope='row' style={style}>{index+1}</th>
+                    <td style={style}>{product.label}</td>
+                    <td style={style}>{product.value}</td>
+                    <td style={style}>{product.quantity}</td>
+                    <td style={style}>{product.total}</td>
+                    <td style={style} onClick={() => this.incrementItem(index)}><ArrowUp /></td>
+                    <td style={style} onClick={() => this.decrementItem(index)}><ArrowDown /></td>
+                    <td style={style} onClick= {() => this.handleDeleteItem(index)}><Cancel /></td>
                   </tr>
                 )
               })}
@@ -117,31 +134,54 @@ export class POSScreen extends React.Component{
           </Table>
         </div>
       );
+    }
+    let GT = null;
+    let checkout = null;
+    if(grandTotal > 0){
+      GT=  <p style={style}>Grand Total: {grandTotal}</p>;
+      checkout =  <Button color="success" size="md" onClick={this.checkout} >Checkout</Button>;
+    }
 
-    const style11 = {
-      marginLeft: '40%'
-    };
-    const style12 = {
-      marginLeft: '40%',
-      padding: '10px'
-    };
+   
 		return (
-			<div >
-        <Select
-        className = 'center'
-        name="Select the product"
-        value={selectedOption}
-        onChange={this.handleChange}
-        options={options}
-        />
-        <div className="center3">
-          <Button color="success" size="lg" onClick={this.addToCart}>Add to cart</Button>
+      <div className = "abcd" style = {sectionStyle} >
+      <div className = "abc">
+          <Container>
+            <Row>
+              <Col lg={{ size: 6, order: 2, offset: 1 }}>
+                <Select
+                name="Select the product"
+                value={selectedOption}
+                onChange={this.handleChange}
+                options={options}
+                />
+              </Col>
+              <Col lg={{ size: 2, order: 2, offset: 0 }}>
+                <Button color="success" size="md" onClick={this.addToCart}>Add to cart</Button>
+              </Col>
+            </Row>
+            <Row>
+              <Col sm={{ size: 'lg', order: 2, offset: 2 }}>
+                {items}
+              </Col>
+            </Row>
+            <Row>
+              <Col sm={{ size: '2', offset: 4}}>
+                {GT}
+              </Col>   
+              <Col sm={{ size: '2'}}>
+                {checkout}          
+              </Col>
+            </Row>
+          </Container>
         </div>
-
-        {items}
-        <p style={style12}>Grand Total: {grandTotal}</p>
-          <Button color="success" size="lg" onClick={this.checkout} style={style11}>Checkout</Button>
       </div>
+        
+        
+      
 		);
 	}
 }
+
+
+
