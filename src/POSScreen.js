@@ -56,18 +56,20 @@ export class POSScreen extends React.Component{
   }
 
   addToCart = () => {
+    
     let checkMultipleProductsCounter = 0;
     selectedItemsList.map(product => {
-      if(product.label === this.state.selectedOption.label){
+      if(this.state.selectedOption.label === product.label){
          checkMultipleProductsCounter += 1;
       }
+      return 'x';
     });
     
     if(this.state.selectedOption.label == null){
       alert("Select a product.");
     }
     else if (checkMultipleProductsCounter > 0) {
-      alert("Product already present in your shopping cart.");
+      alert("Product is already present in your shopping cart.");
     }
     else{
       let tempArray = [
@@ -103,13 +105,12 @@ export class POSScreen extends React.Component{
     if(selectedItemsList.length > 0){
     items = (
         <div>
-          <Table borderless>
+          <Table borderless responsive>
             <thead>
               <tr>
                 <th style={style}>#</th>
                 <th style={style}>Product</th>
                 <th style={style}>Rate</th>
-                <th style={style}>Quantity</th>
                 <th style={style}>Quantity</th>
                 <th style={style}>Total</th>
               </tr>
@@ -176,9 +177,6 @@ export class POSScreen extends React.Component{
           </Container>
         </div>
       </div>
-        
-        
-      
 		);
 	}
 }
